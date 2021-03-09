@@ -1,0 +1,96 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    05/16/19 00:54:16
+c:\asm\Pascal_ASM_link/unit.asm				     Page 1 - 1
+
+
+				; unit
+
+				; для снятия проблем с заданием путей к подключаемым библиотекам
+				; рассматривается случай вспомогательного модуля, который в процессе
+				; своей работы не использует макросов, объявленных в файле console.inc
+				; поэтому не надо использовать в этом модуле директиву include console.inc
+				; достаточно обойтись следующей парой директив 
+				; (установливающих нужные режимы трансляции):
+				.586
+				.model Flat,stdcall
+
+				public MAX_MIN; точка входа в модуль 
+
+ 00000000			.code
+
+ 00000000			MAX_MIN proc
+
+				;MAX_MIN(X,Y,var MAX,var MIN)
+				;MAX := максимум(X,Y)
+				;MIN := минимум(X,Y)
+				;ст.соглашения о связях stdcall
+
+ 00000000  55			    push EBP
+ 00000001  8B EC		    mov EBP,ESP
+				    
+ 00000003  50			    push EAX
+ 00000004  53			    push EBX
+ 00000005  51			    push ECX
+ 00000006  52			    push EDX
+				    
+ 00000007  8B 45 08		    mov EAX,[EBP+8]; X c/зн
+ 0000000A  8B 5D 0C		    mov EBX,[EBP+12]; Y c/зн
+				    
+ 0000000D  8B 4D 10		    mov ECX,[EBP+16]; offset MAX
+ 00000010  8B 55 14		    mov EDX,[EBP+20]; offset MIN
+				    
+ 00000013  3B C3		    cmp EAX,EBX
+ 00000015  7D 01		    jGE @F
+ 00000017  93			    xchg EAX,EBX
+ 00000018			@@: ;EAX => MAX, EBX => MIN
+ 00000018  89 01		    mov [ECX],EAX; MAX
+ 0000001A  89 1A		    mov [EDX],EBX; MIN
+				 
+ 0000001C  5A			    pop EDX
+ 0000001D  59			    pop ECX
+ 0000001E  5B			    pop EBX
+ 0000001F  58			    pop EAX
+				    
+ 00000020  5D			    pop EBP
+ 00000021  C2 0010		    ret 4*4
+				    
+ 00000024			MAX_MIN endp    
+
+				    end 
+Microsoft (R) Macro Assembler Version 6.14.8444		    05/16/19 00:54:16
+c:\asm\Pascal_ASM_link/unit.asm				     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000000 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000024 Para	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+MAX_MIN  . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000024 Public STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+
+	   0 Warnings
+	   0 Errors

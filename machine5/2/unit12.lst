@@ -1,0 +1,91 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    05/16/19 18:02:00
+c:\asm\machine5\3/unit12.asm				     Page 1 - 1
+
+
+				.586
+				.model Flat,stdcall
+				public Power2
+
+ 00000000			.code 
+ 00000000			Power2 proc
+
+ 00000000  55			        push EBP
+ 00000001  8B EC		        mov EBP, ESP
+
+ 00000003  50			        push EAX 
+ 00000004  53			        push EBX
+ 00000005  51			        push ECX
+ 00000006  56			        push ESI
+
+
+ 00000007  8B 75 08		        mov ESI, [EBP + 8]; X
+ 0000000A  8B 5D 0C		        mov EBX, [EBP + 12]; offset Res
+
+ 0000000D  B9 00000020		        mov ECX, 32
+ 00000012  BA 00000001		        mov EDX, 1
+ 00000017  B0 FF		        mov AL, -1
+
+ 00000019  33 F2		@L:     xor ESI, EDX
+ 0000001B  74 08		        jZ @res
+ 0000001D  33 F2		        xor ESI, EDX
+ 0000001F  D1 E2		        shl EDX, 1
+ 00000021  E2 F6		        loop @L
+ 00000023  EB 07		        jmp @F
+
+ 00000025  83 E9 20		@res:   sub ECX, 32
+ 00000028  F7 D9		        neg ECX
+ 0000002A  8A C1		        mov AL, CL
+
+ 0000002C  88 03		@@:     mov byte ptr [EBX], AL
+
+ 0000002E  5E			        pop ESI
+ 0000002F  59			        pop ECX
+ 00000030  5B			        pop EBX
+ 00000031  58			        pop EAX 
+
+ 00000032  5D			        pop EBP 
+
+ 00000033  C2 0008		        ret 4*2
+
+ 00000036			Power2 endp
+				end
+Microsoft (R) Macro Assembler Version 6.14.8444		    05/16/19 18:02:00
+c:\asm\machine5\3/unit12.asm				     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000000 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000036 Para	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+Power2 . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000036 Public STDCALL
+  @L . . . . . . . . . . . . . .	L Near	 00000019 _TEXT	
+  @res . . . . . . . . . . . . .	L Near	 00000025 _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+
+	   0 Warnings
+	   0 Errors
