@@ -1,0 +1,1266 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    05/19/19 20:40:43
+c:\asm/old_task1.asm					     Page 1 - 1
+
+
+				include console.inc 
+			      C .NOLIST
+			      C .LIST
+			      C ; Исключение из списка служебных слов
+			      C option NoKeyWord: <c name str>
+			      C 
+			      C 
+			      C 
+			      C ;include masm32.inc
+			      C 
+			      C    includelib masm32.lib
+			      C    includelib user32.lib
+			      C    includelib kernel32.lib
+			      C    includelib msvcrt.lib
+			      C    includelib io_proc.lib
+			      C    
+			      C 
+				Sum macro Res:=<EAX>, Terms:vararg
+				        local count
+				        count = 0
+				        for reg, <EAX, EBX, ECX, EDX, ESI, EDI, EBP>
+				                ifidni <Res>, <reg>
+				                        count = count + 1
+				                endif
+				        endm
+				        if count EQ 0 
+				                outstr "Error. Res isn't r32"
+				                .err "Error. Res isn't r32"
+				                exitm
+				        endif
+				        ifdifi <Res>, <ESI>
+				                push ESI                
+				        else 
+				                push ECX                  
+				        endif
+				        ifdifi <Res>, <EDX>
+				                push EDX   
+				                mov EDX, Res             
+				        else 
+				                push ECX   
+				                mov ECX, Res               
+				        endif
+				        count = 0
+				        for K, <Terms>
+				                local flag, sec
+				                ifdifi <K>, <>
+				                        if type K EQ 0
+				                                count = count + K
+				                        else 
+				                                flag = 0
+				                                ifidni <Res>, <K>
+				                                        ifdifi <Res>, <EDX>
+				                                                add Res, EDX             
+				                                        else 
+				                                                add Res, ECX             
+				                                        endif
+				                                else
+				                                        for F, <A, B, C, D>
+				                                                ifidni <Res>, <E&F&X>
+				                                                        for S, <L, X, H>
+				                                                                ifidni <K>, <&F&S&>
+				                                                                        ifdifi <Res>, <ESI>
+				                                                                                ifdifi <Res>, <EDX>
+				                                                                                        movzx ESI, D&S
+				                                                                                        add Res, ESI   
+				                                                                                        flag = 1   
+				                                                                                else 
+				                                                                                        movzx ESI, C&S
+				                                                                                        add Res, ESI   
+				                                                                                        flag = 1
+				                                                                                endif             
+				                                                                        else 
+				                                                                                movzx ECX, D&S
+				                                                                                add Res, ECX   
+				                                                                                flag = 1   
+				                                                                        endif   
+				                                                                endif 
+				                                                        endm 
+				                                                endif 
+				                                        endm
+				                                        sec = 0
+				                                        if not flag
+				                                                if type K EQ 4
+				                                                        ifdifi <K>, <ESI>
+				                                                                ifdifi <K>, <ECX>
+				                                                                        ifdifi <K>, <EDX>
+				                                                                                add Res, K
+				                                                                        endif 
+				                                                                endif
+				                                                        endif 
+				                                                else
+				                                                        for GH, <DL, DH, DX, CL, CH, CX>
+				                                                                ifidni <K>, <GH>
+				                                                                        sec = 1
+				                                                                endif
+				                                                        endm
+				                                                        if sec EQ 0
+				                                                                ifdifi <Res>, <ESI>
+				                                                                        movzx ESI, K
+				                                                                        add Res, ESI                
+				                                                                else 
+				                                                                        movzx ECX, K
+				                                                                        add Res, ECX              
+				                                                                endif
+				                                                        endif
+				                                                endif
+				                                        endif
+				                                endif
+				                        endif 
+				                endif
+				        endm
+				        if count NE 0
+				                add Res, count
+				        endif
+				        ifdifi <Res>, <EDX>
+				                pop EDX                
+				        else 
+				                pop ECX                  
+				        endif
+				        ifdifi <Res>, <ESI>
+				                pop ESI                
+				        else 
+				                pop ECX                  
+				        endif
+				        for K, <Terms>
+				                local sec1
+				                ifdifi <K>, <>
+				                        if type K EQ 4
+				                                ifdifi <K>, <Res>
+				                                        ifidni <K>, <ESI>
+				                                                add Res, K
+				                                        endif 
+				                                        ifidni <K>, <ECX>
+				                                                add Res, K
+				                                        endif
+				                                        ifidni <K>, <EDX>
+				                                                add Res, K
+				                                        endif 
+				                                endif
+				                        else
+				                                sec1 = 0
+				                                for GH, <DL, DH, DX, CL, CH, CX>
+				                                        ifidni <K>, <GH>
+				                                                sec1 = 1
+				                                        endif
+				                                endm
+				                                if sec1
+				                                        ifdifi <Res>, <ESI>
+				                                                push ESI
+				                                                movzx ESI, K
+				                                                add Res, ESI   
+				                                                pop ESI             
+				                                        else 
+				                                                push EDI
+				                                                movzx EDI, K
+				                                                add Res, EDI  
+				                                                pop EDI            
+				                                        endif
+				                                endif
+				                        endif
+				                endif
+				        endm
+				endm
+ 00000019			.data
+ = 00000001			        K1 equ 1
+ = 00000002			        K2 equ 2
+ = 00000003			        K3 equ 3
+ 00000019 0A			        B1 db 10
+ 0000001A 14			        B2 db 20
+ 0000001B 1E			        B3 db 30
+ 0000001C 0FA0			        W1 dw 4000
+ 0000001E 1388			        W2 dw 5000
+ 00000020 1770			        W3 dw 6000
+ 00000022 000AAE60		        D1 dd 700000
+ 00000026 000C3500		        D2 dd 800000
+ 0000002A 000DBBA0		        D3 dd 900000
+ 00000000			.code
+ 00000000			start:
+				        .LISTMACRO
+				        Sum EAX,<123456,K1,EBX,D1>
+ 00000000  56		     1	                push ESI                
+ 00000001  52		     1	                push EDX   
+ 00000002  8B D0	     1	                mov EDX, EAX             
+ 00000004  03 C3	     2	                                                                                add EAX, EBX
+ 00000006  03 05 00000022 R  2	                                                                                add EAX, D1
+ 0000000C  05 0001E241	     1	                add EAX, ??0000
+ 00000011  5A		     1	                pop EDX                
+ 00000012  5E		     1	                pop ESI                
+				        Sum EAX,123456,K1,EBX,D1
+ 00000013  56		     1	                push ESI                
+ 00000014  52		     1	                push EDX   
+ 00000015  8B D0	     1	                mov EDX, EAX             
+ 00000017  03 C3	     2	                                                                                add EAX, EBX
+ 00000019  03 05 00000022 R  2	                                                                                add EAX, D1
+ 0000001F  05 0001E241	     1	                add EAX, ??000D
+ 00000024  5A		     1	                pop EDX                
+ 00000025  5E		     1	                pop ESI                
+				        Sum ,123456,K1,EBX,D1
+ 00000026  56		     1	                push ESI                
+ 00000027  52		     1	                push EDX   
+ 00000028  8B D0	     1	                mov EDX, EAX             
+ 0000002A  03 C3	     2	                                                                                add EAX, EBX
+ 0000002C  03 05 00000022 R  2	                                                                                add EAX, D1
+ 00000032  05 0001E241	     1	                add EAX, ??001A
+ 00000037  5A		     1	                pop EDX                
+ 00000038  5E		     1	                pop ESI                
+				        Sum EAX,123456, ,K1,EBX,D1
+ 00000039  56		     1	                push ESI                
+ 0000003A  52		     1	                push EDX   
+ 0000003B  8B D0	     1	                mov EDX, EAX             
+ 0000003D  03 C3	     2	                                                                                add EAX, EBX
+ 0000003F  03 05 00000022 R  2	                                                                                add EAX, D1
+ 00000045  05 0001E241	     1	                add EAX, ??0027
+ 0000004A  5A		     1	                pop EDX                
+ 0000004B  5E		     1	                pop ESI                
+				        Sum EAX
+ 0000004C  56		     1	                push ESI                
+ 0000004D  52		     1	                push EDX   
+ 0000004E  8B D0	     1	                mov EDX, EAX             
+ 00000050  5A		     1	                pop EDX                
+ 00000051  5E		     1	                pop ESI                
+				        Sum
+ 00000052  56		     1	                push ESI                
+ 00000053  52		     1	                push EDX   
+ 00000054  8B D0	     1	                mov EDX, EAX             
+ 00000056  5A		     1	                pop EDX                
+ 00000057  5E		     1	                pop ESI                
+				        Sum EAX,2,K2,B2,W2,D2
+ 00000058  56		     1	                push ESI                
+ 00000059  52		     1	                push EDX   
+ 0000005A  8B D0	     1	                mov EDX, EAX             
+ 0000005C  0F B6 35	     2	                                                                        movzx ESI, B2
+	   0000001A R
+ 00000063  03 C6	     2	                                                                        add EAX, ESI                
+ 00000065  0F B7 35	     2	                                                                        movzx ESI, W2
+	   0000001E R
+ 0000006C  03 C6	     2	                                                                        add EAX, ESI                
+ 0000006E  03 05 00000026 R  2	                                                                                add EAX, D2
+ 00000074  83 C0 04	     1	                add EAX, ??0039
+ 00000077  5A		     1	                pop EDX                
+ 00000078  5E		     1	                pop ESI                
+				        Sum AL,1,2,3
+ 00000079  50		     3	    push eax
+ 0000007A  51		     3	    push ecx
+ 0000007B  52		     3	    push edx
+ 0000007C  9C		     3	    pushfd
+ 0000002E		     3	.data
+ 0000002E 00		     3	??004C  db 0
+ 0000002F 45 72 72 6F 72     3	??004A db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 0000007D		     3	.code
+ 0000007D  B8 0000002F R     3	    mov  eax,offset ??004A
+ 00000082  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 00000089  75 19	     3	    jne  ??004E;   перекодирование выключено
+ 0000008B  80 3D 0000002E R  3	    cmp  ??004C,0
+	   00
+ 00000092  75 10	     3	    jne  ??004E
+ 00000094  50		     3	    push eax
+ 0000009C  C6 05 0000002E R  3	    mov  ??004C,1; Не надо перекодировать второй раз!
+	   01
+ 000000A3  58		     3	    pop  eax
+ 000000A4		     3	??004E:
+ 000000AA  9D		     3	    popfd
+ 000000AB  5A		     3	    pop  edx
+ 000000AC  59		     3	    pop  ecx
+ 000000AD  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(171) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(171): Main Line Code
+c:\asm/old_task1.asm(171) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(171): Main Line Code
+				        Sum CX,1,K2
+ 000000AE  50		     3	    push eax
+ 000000AF  51		     3	    push ecx
+ 000000B0  52		     3	    push edx
+ 000000B1  9C		     3	    pushfd
+ 00000044		     3	.data
+ 00000044 00		     3	??0052  db 0
+ 00000045 45 72 72 6F 72     3	??0050 db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 000000B2		     3	.code
+ 000000B2  B8 00000045 R     3	    mov  eax,offset ??0050
+ 000000B7  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 000000BE  75 19	     3	    jne  ??0054;   перекодирование выключено
+ 000000C0  80 3D 00000044 R  3	    cmp  ??0052,0
+	   00
+ 000000C7  75 10	     3	    jne  ??0054
+ 000000C9  50		     3	    push eax
+ 000000D1  C6 05 00000044 R  3	    mov  ??0052,1; Не надо перекодировать второй раз!
+	   01
+ 000000D8  58		     3	    pop  eax
+ 000000D9		     3	??0054:
+ 000000DF  9D		     3	    popfd
+ 000000E0  5A		     3	    pop  edx
+ 000000E1  59		     3	    pop  ecx
+ 000000E2  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(172) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(172): Main Line Code
+c:\asm/old_task1.asm(172) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(172): Main Line Code
+				        Sum K3,1,2,3
+ 000000E3  50		     3	    push eax
+ 000000E4  51		     3	    push ecx
+ 000000E5  52		     3	    push edx
+ 000000E6  9C		     3	    pushfd
+ 0000005A		     3	.data
+ 0000005A 00		     3	??0058  db 0
+ 0000005B 45 72 72 6F 72     3	??0056 db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 000000E7		     3	.code
+ 000000E7  B8 0000005B R     3	    mov  eax,offset ??0056
+ 000000EC  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 000000F3  75 19	     3	    jne  ??005A;   перекодирование выключено
+ 000000F5  80 3D 0000005A R  3	    cmp  ??0058,0
+	   00
+ 000000FC  75 10	     3	    jne  ??005A
+ 000000FE  50		     3	    push eax
+ 00000106  C6 05 0000005A R  3	    mov  ??0058,1; Не надо перекодировать второй раз!
+	   01
+ 0000010D  58		     3	    pop  eax
+ 0000010E		     3	??005A:
+ 00000114  9D		     3	    popfd
+ 00000115  5A		     3	    pop  edx
+ 00000116  59		     3	    pop  ecx
+ 00000117  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(173) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(173): Main Line Code
+c:\asm/old_task1.asm(173) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(173): Main Line Code
+				        Sum AL,1,2,3
+ 00000118  50		     3	    push eax
+ 00000119  51		     3	    push ecx
+ 0000011A  52		     3	    push edx
+ 0000011B  9C		     3	    pushfd
+ 00000070		     3	.data
+ 00000070 00		     3	??005E  db 0
+ 00000071 45 72 72 6F 72     3	??005C db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 0000011C		     3	.code
+ 0000011C  B8 00000071 R     3	    mov  eax,offset ??005C
+ 00000121  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 00000128  75 19	     3	    jne  ??0060;   перекодирование выключено
+ 0000012A  80 3D 00000070 R  3	    cmp  ??005E,0
+	   00
+ 00000131  75 10	     3	    jne  ??0060
+ 00000133  50		     3	    push eax
+ 0000013B  C6 05 00000070 R  3	    mov  ??005E,1; Не надо перекодировать второй раз!
+	   01
+ 00000142  58		     3	    pop  eax
+ 00000143		     3	??0060:
+ 00000149  9D		     3	    popfd
+ 0000014A  5A		     3	    pop  edx
+ 0000014B  59		     3	    pop  ecx
+ 0000014C  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(174) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(174): Main Line Code
+c:\asm/old_task1.asm(174) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(174): Main Line Code
+				        Sum B3,1,2,3
+ 0000014D  50		     3	    push eax
+ 0000014E  51		     3	    push ecx
+ 0000014F  52		     3	    push edx
+ 00000150  9C		     3	    pushfd
+ 00000086		     3	.data
+ 00000086 00		     3	??0064  db 0
+ 00000087 45 72 72 6F 72     3	??0062 db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 00000151		     3	.code
+ 00000151  B8 00000087 R     3	    mov  eax,offset ??0062
+ 00000156  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 0000015D  75 19	     3	    jne  ??0066;   перекодирование выключено
+ 0000015F  80 3D 00000086 R  3	    cmp  ??0064,0
+	   00
+ 00000166  75 10	     3	    jne  ??0066
+ 00000168  50		     3	    push eax
+ 00000170  C6 05 00000086 R  3	    mov  ??0064,1; Не надо перекодировать второй раз!
+	   01
+ 00000177  58		     3	    pop  eax
+ 00000178		     3	??0066:
+ 0000017E  9D		     3	    popfd
+ 0000017F  5A		     3	    pop  edx
+ 00000180  59		     3	    pop  ecx
+ 00000181  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(175) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(175): Main Line Code
+c:\asm/old_task1.asm(175) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(175): Main Line Code
+				        Sum W3,1,2,3
+ 00000182  50		     3	    push eax
+ 00000183  51		     3	    push ecx
+ 00000184  52		     3	    push edx
+ 00000185  9C		     3	    pushfd
+ 0000009C		     3	.data
+ 0000009C 00		     3	??006A  db 0
+ 0000009D 45 72 72 6F 72     3	??0068 db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 00000186		     3	.code
+ 00000186  B8 0000009D R     3	    mov  eax,offset ??0068
+ 0000018B  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 00000192  75 19	     3	    jne  ??006C;   перекодирование выключено
+ 00000194  80 3D 0000009C R  3	    cmp  ??006A,0
+	   00
+ 0000019B  75 10	     3	    jne  ??006C
+ 0000019D  50		     3	    push eax
+ 000001A5  C6 05 0000009C R  3	    mov  ??006A,1; Не надо перекодировать второй раз!
+	   01
+ 000001AC  58		     3	    pop  eax
+ 000001AD		     3	??006C:
+ 000001B3  9D		     3	    popfd
+ 000001B4  5A		     3	    pop  edx
+ 000001B5  59		     3	    pop  ecx
+ 000001B6  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(176) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(176): Main Line Code
+c:\asm/old_task1.asm(176) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(176): Main Line Code
+				        Sum ESP,1,2,3
+ 000001B7  50		     3	    push eax
+ 000001B8  51		     3	    push ecx
+ 000001B9  52		     3	    push edx
+ 000001BA  9C		     3	    pushfd
+ 000000B2		     3	.data
+ 000000B2 00		     3	??0070  db 0
+ 000000B3 45 72 72 6F 72     3	??006E db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 000001BB		     3	.code
+ 000001BB  B8 000000B3 R     3	    mov  eax,offset ??006E
+ 000001C0  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 000001C7  75 19	     3	    jne  ??0072;   перекодирование выключено
+ 000001C9  80 3D 000000B2 R  3	    cmp  ??0070,0
+	   00
+ 000001D0  75 10	     3	    jne  ??0072
+ 000001D2  50		     3	    push eax
+ 000001DA  C6 05 000000B2 R  3	    mov  ??0070,1; Не надо перекодировать второй раз!
+	   01
+ 000001E1  58		     3	    pop  eax
+ 000001E2		     3	??0072:
+ 000001E8  9D		     3	    popfd
+ 000001E9  5A		     3	    pop  edx
+ 000001EA  59		     3	    pop  ecx
+ 000001EB  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(177) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(177): Main Line Code
+c:\asm/old_task1.asm(177) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(177): Main Line Code
+				        Sum EDX,1,B2,W2, ,K2,D3,123
+ 000001EC  56		     1	                push ESI                
+ 000001ED  51		     1	                push ECX   
+ 000001EE  8B CA	     1	                mov ECX, EDX               
+ 000001F0  0F B6 35	     2	                                                                        movzx ESI, B2
+	   0000001A R
+ 000001F7  03 D6	     2	                                                                        add EDX, ESI                
+ 000001F9  0F B7 35	     2	                                                                        movzx ESI, W2
+	   0000001E R
+ 00000200  03 D6	     2	                                                                        add EDX, ESI                
+ 00000202  03 15 0000002A R  2	                                                                                add EDX, D3
+ 00000208  83 C2 7E	     1	                add EDX, ??0073
+ 0000020B  59		     1	                pop ECX                  
+ 0000020C  5E		     1	                pop ESI                
+				        Sum ESI,AL,2,3,AH,K1,K2,BL,BH,DL,DH
+ 0000020D  51		     1	                push ECX                  
+ 0000020E  52		     1	                push EDX   
+ 0000020F  8B D6	     1	                mov EDX, ESI             
+ 00000211  0F B6 C8	     2	                                                                        movzx ECX, AL
+ 00000214  03 F1	     2	                                                                        add ESI, ECX              
+ 00000216  0F B6 CC	     2	                                                                        movzx ECX, AH
+ 00000219  03 F1	     2	                                                                        add ESI, ECX              
+ 0000021B  0F B6 CB	     2	                                                                        movzx ECX, BL
+ 0000021E  03 F1	     2	                                                                        add ESI, ECX              
+ 00000220  0F B6 CF	     2	                                                                        movzx ECX, BH
+ 00000223  03 F1	     2	                                                                        add ESI, ECX              
+ 00000225  83 C6 08	     1	                add ESI, ??0089
+ 00000228  5A		     1	                pop EDX                
+ 00000229  59		     1	                pop ECX                  
+ 0000022A  57		     2	                                                push EDI
+ 0000022B  0F B6 FA	     2	                                                movzx EDI, DL
+ 0000022E  03 F7	     2	                                                add ESI, EDI  
+ 00000230  5F		     2	                                                pop EDI            
+ 00000231  57		     2	                                                push EDI
+ 00000232  0F B6 FE	     2	                                                movzx EDI, DH
+ 00000235  03 F7	     2	                                                add ESI, EDI  
+ 00000237  5F		     2	                                                pop EDI            
+				        Sum EDI,AX,BX,CX,DX,W1,W2,123
+ 00000238  56		     1	                push ESI                
+ 00000239  52		     1	                push EDX   
+ 0000023A  8B D7	     1	                mov EDX, EDI             
+ 0000023C  0F B7 F0	     2	                                                                        movzx ESI, AX
+ 0000023F  03 FE	     2	                                                                        add EDI, ESI                
+ 00000241  0F B7 F3	     2	                                                                        movzx ESI, BX
+ 00000244  03 FE	     2	                                                                        add EDI, ESI                
+ 00000246  0F B7 35	     2	                                                                        movzx ESI, W1
+	   0000001C R
+ 0000024D  03 FE	     2	                                                                        add EDI, ESI                
+ 0000024F  0F B7 35	     2	                                                                        movzx ESI, W2
+	   0000001E R
+ 00000256  03 FE	     2	                                                                        add EDI, ESI                
+ 00000258  83 C7 7B	     1	                add EDI, ??00A8
+ 0000025B  5A		     1	                pop EDX                
+ 0000025C  5E		     1	                pop ESI                
+ 0000025D  56		     2	                                                push ESI
+ 0000025E  0F B7 F1	     2	                                                movzx ESI, CX
+ 00000261  03 FE	     2	                                                add EDI, ESI   
+ 00000263  5E		     2	                                                pop ESI             
+ 00000264  56		     2	                                                push ESI
+ 00000265  0F B7 F2	     2	                                                movzx ESI, DX
+ 00000268  03 FE	     2	                                                add EDI, ESI   
+ 0000026A  5E		     2	                                                pop ESI             
+				        Sum 0,1,2,3
+ 0000026B  50		     3	    push eax
+ 0000026C  51		     3	    push ecx
+ 0000026D  52		     3	    push edx
+ 0000026E  9C		     3	    pushfd
+ 000000C8		     3	.data
+ 000000C8 00		     3	??00C1  db 0
+ 000000C9 45 72 72 6F 72     3	??00BF db "Error. Res isn't r32",0
+	   2E 20 52 65 73
+	   20 69 73 6E 27
+	   74 20 72 33 32
+	   00
+ 0000026F		     3	.code
+ 0000026F  B8 000000C9 R     3	    mov  eax,offset ??00BF
+ 00000274  80 3D 00000008 R  3	    cmp  ??ConsoleMode,0
+	   00
+ 0000027B  75 19	     3	    jne  ??00C3;   перекодирование выключено
+ 0000027D  80 3D 000000C8 R  3	    cmp  ??00C1,0
+	   00
+ 00000284  75 10	     3	    jne  ??00C3
+ 00000286  50		     3	    push eax
+ 0000028E  C6 05 000000C8 R  3	    mov  ??00C1,1; Не надо перекодировать второй раз!
+	   01
+ 00000295  58		     3	    pop  eax
+ 00000296		     3	??00C3:
+ 0000029C  9D		     3	    popfd
+ 0000029D  5A		     3	    pop  edx
+ 0000029E  59		     3	    pop  ecx
+ 0000029F  58		     3	    pop  eax
+			     1	                .err "Error. Res isn't r32"
+c:\asm/old_task1.asm(181) : error A2051: text item required
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(181): Main Line Code
+c:\asm/old_task1.asm(181) : error A2052: forced error
+ Sum(10): Macro Called From
+  c:\asm/old_task1.asm(181): Main Line Code
+				        Sum EDX,EDX ,B2,EDX, ,K2,D3,EDX
+ 000002A0  56		     1	                push ESI                
+ 000002A1  51		     1	                push ECX   
+ 000002A2  8B CA	     1	                mov ECX, EDX               
+ 000002A4  03 D1	     2	                                                add EDX, ECX             
+ 000002A6  0F B6 35	     2	                                                                        movzx ESI, B2
+	   0000001A R
+ 000002AD  03 D6	     2	                                                                        add EDX, ESI                
+ 000002AF  03 D1	     2	                                                add EDX, ECX             
+ 000002B1  03 15 0000002A R  2	                                                                                add EDX, D3
+ 000002B7  03 D1	     2	                                                add EDX, ECX             
+ 000002B9  83 C2 02	     1	                add EDX, ??00C4
+ 000002BC  59		     1	                pop ECX                  
+ 000002BD  5E		     1	                pop ESI                
+				        Sum ,1,EAX,EAX, ,K2,EAX,123
+ 000002BE  56		     1	                push ESI                
+ 000002BF  52		     1	                push EDX   
+ 000002C0  8B D0	     1	                mov EDX, EAX             
+ 000002C2  03 C2	     2	                                                add EAX, EDX             
+ 000002C4  03 C2	     2	                                                add EAX, EDX             
+ 000002C6  03 C2	     2	                                                add EAX, EDX             
+ 000002C8  83 C0 7E	     1	                add EAX, ??00DA
+ 000002CB  5A		     1	                pop EDX                
+ 000002CC  5E		     1	                pop ESI                
+				        Sum ECX,CL,CH, ,CX,CL,CH,CX
+ 000002CD  56		     1	                push ESI                
+ 000002CE  52		     1	                push EDX   
+ 000002CF  8B D1	     1	                mov EDX, ECX             
+ 000002D1  5A		     1	                pop EDX                
+ 000002D2  5E		     1	                pop ESI                
+ 000002D3  56		     2	                                                push ESI
+ 000002D4  0F B6 F1	     2	                                                movzx ESI, CL
+ 000002D7  03 CE	     2	                                                add ECX, ESI   
+ 000002D9  5E		     2	                                                pop ESI             
+ 000002DA  56		     2	                                                push ESI
+ 000002DB  0F B6 F5	     2	                                                movzx ESI, CH
+ 000002DE  03 CE	     2	                                                add ECX, ESI   
+ 000002E0  5E		     2	                                                pop ESI             
+ 000002E1  56		     2	                                                push ESI
+ 000002E2  0F B7 F1	     2	                                                movzx ESI, CX
+ 000002E5  03 CE	     2	                                                add ECX, ESI   
+ 000002E7  5E		     2	                                                pop ESI             
+ 000002E8  56		     2	                                                push ESI
+ 000002E9  0F B6 F1	     2	                                                movzx ESI, CL
+ 000002EC  03 CE	     2	                                                add ECX, ESI   
+ 000002EE  5E		     2	                                                pop ESI             
+ 000002EF  56		     2	                                                push ESI
+ 000002F0  0F B6 F5	     2	                                                movzx ESI, CH
+ 000002F3  03 CE	     2	                                                add ECX, ESI   
+ 000002F5  5E		     2	                                                pop ESI             
+ 000002F6  56		     2	                                                push ESI
+ 000002F7  0F B7 F1	     2	                                                movzx ESI, CX
+ 000002FA  03 CE	     2	                                                add ECX, ESI   
+ 000002FC  5E		     2	                                                pop ESI             
+				        Sum ,AL,AL,AH, ,AH,AX,AX,EAX,EAX
+ 000002FD  56		     1	                push ESI                
+ 000002FE  52		     1	                push EDX   
+ 000002FF  8B D0	     1	                mov EDX, EAX             
+ 00000301  0F B6 F0	     2	                                                                        movzx ESI, AL
+ 00000304  03 C6	     2	                                                                        add EAX, ESI                
+ 00000306  0F B6 F0	     2	                                                                        movzx ESI, AL
+ 00000309  03 C6	     2	                                                                        add EAX, ESI                
+ 0000030B  0F B6 F4	     2	                                                                        movzx ESI, AH
+ 0000030E  03 C6	     2	                                                                        add EAX, ESI                
+ 00000310  0F B6 F4	     2	                                                                        movzx ESI, AH
+ 00000313  03 C6	     2	                                                                        add EAX, ESI                
+ 00000315  0F B7 F0	     2	                                                                        movzx ESI, AX
+ 00000318  03 C6	     2	                                                                        add EAX, ESI                
+ 0000031A  0F B7 F0	     2	                                                                        movzx ESI, AX
+ 0000031D  03 C6	     2	                                                                        add EAX, ESI                
+ 0000031F  03 C2	     2	                                                add EAX, EDX             
+ 00000321  03 C2	     2	                                                add EAX, EDX             
+ 00000323  5A		     1	                pop EDX                
+ 00000324  5E		     1	                pop ESI                
+				        .NOLISTMACRO
+				        exit 
+				end start
+Microsoft (R) Macro Assembler Version 6.14.8444		    05/19/19 20:40:43
+c:\asm/old_task1.asm					     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+??CheckStrToBuf  . . . . . . . .	Proc
+??FindESP  . . . . . . . . . . .	Proc
+??RestoreReg . . . . . . . . . .	Proc
+??SaveReg  . . . . . . . . . . .	Proc
+@Random  . . . . . . . . . . . .	Func
+@inchar  . . . . . . . . . . . .	Func
+@inintln . . . . . . . . . . . .	Func
+@inint . . . . . . . . . . . . .	Func
+@readkey . . . . . . . . . . . .	Func
+ChagePageAttr  . . . . . . . . .	Proc
+ClrScr . . . . . . . . . . . . .	Proc
+ConsoleMode  . . . . . . . . . .	Proc
+ConsoleTitle . . . . . . . . . .	Proc
+DOS  . . . . . . . . . . . . . .	Func
+DownloadFile . . . . . . . . . .	Proc
+GetConsoleTitle  . . . . . . . .	Proc
+HeapBlockSize  . . . . . . . . .	Proc
+InputStr . . . . . . . . . . . .	Proc
+MsgBox . . . . . . . . . . . . .	Proc
+NewConsole . . . . . . . . . . .	Proc
+OpenFile . . . . . . . . . . . .	Proc
+OutFlags . . . . . . . . . . . .	Proc
+Randomize  . . . . . . . . . . .	Proc
+RunExe . . . . . . . . . . . . .	Proc
+SetScreenSize  . . . . . . . . .	Proc
+SetTextAttr  . . . . . . . . . .	Proc
+Sum  . . . . . . . . . . . . . .	Proc
+TotalHeapAllocated . . . . . . .	Proc
+WhereX . . . . . . . . . . . . .	Proc
+WhereY . . . . . . . . . . . . .	Proc
+dispose  . . . . . . . . . . . .	Proc
+exit . . . . . . . . . . . . . .	Proc
+flush  . . . . . . . . . . . . .	Proc
+gotoXY . . . . . . . . . . . . .	Proc
+inchar . . . . . . . . . . . . .	Proc
+inintln  . . . . . . . . . . . .	Proc
+inint  . . . . . . . . . . . . .	Proc
+newline  . . . . . . . . . . . .	Proc
+new  . . . . . . . . . . . . . .	Proc
+outcharln  . . . . . . . . . . .	Proc
+outchar  . . . . . . . . . . . .	Proc
+outdateln  . . . . . . . . . . .	Proc
+outdate  . . . . . . . . . . . .	Proc
+outintln . . . . . . . . . . . .	Proc
+outint . . . . . . . . . . . . .	Proc
+outnumln . . . . . . . . . . . .	Proc
+outnum . . . . . . . . . . . . .	Proc
+outstrln . . . . . . . . . . . .	Proc
+outstr . . . . . . . . . . . . .	Proc
+outtimeln  . . . . . . . . . . .	Proc
+outtime  . . . . . . . . . . . .	Proc
+outwordln  . . . . . . . . . . .	Proc
+outword  . . . . . . . . . . . .	Proc
+pause  . . . . . . . . . . . . .	Proc
+readkey  . . . . . . . . . . . .	Proc
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPosition . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  dwMaximumWindowSize  . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  x  . . . . . . . . . . . . . .	 00000000	 Word
+  y  . . . . . . . . . . . . . .	 00000002	 Word
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SystemTime . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+
+
+Types:
+
+                N a m e                  Size     Attr
+
+c_msvcrt . . . . . . . . . . . .	 00000004     CODE 
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 000000DE Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000032D Para	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CharToOemA . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ClearScreen  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetModuleHandleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemMetrics . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GlobalAlloc  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GlobalFree . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GlobalSize . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+InternetGetConnectedState  . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MessageBoxIndirectA  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StdIn  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StdOut . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+URLDownloadToFileA . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+VirtualProtect . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+nrandom  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+nseed  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+shell_ex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+shell  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+wait_key . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	Number	 0001E241h   
+??0005 . . . . . . . . . . . . .	Number	 00000000h   
+??0006 . . . . . . . . . . . . .	Number	 00000000h   
+??0007 . . . . . . . . . . . . .	Number	 00000000h   
+??0008 . . . . . . . . . . . . .	Number	 00000000h   
+??0009 . . . . . . . . . . . . .	Number	 00000000h   
+??000A . . . . . . . . . . . . .	Number	 00000000h   
+??000D . . . . . . . . . . . . .	Number	 0001E241h   
+??0012 . . . . . . . . . . . . .	Number	 00000000h   
+??0013 . . . . . . . . . . . . .	Number	 00000000h   
+??0014 . . . . . . . . . . . . .	Number	 00000000h   
+??0015 . . . . . . . . . . . . .	Number	 00000000h   
+??0016 . . . . . . . . . . . . .	Number	 00000000h   
+??0017 . . . . . . . . . . . . .	Number	 00000000h   
+??001A . . . . . . . . . . . . .	Number	 0001E241h   
+??001F . . . . . . . . . . . . .	Number	 00000000h   
+??0020 . . . . . . . . . . . . .	Number	 00000000h   
+??0021 . . . . . . . . . . . . .	Number	 00000000h   
+??0022 . . . . . . . . . . . . .	Number	 00000000h   
+??0023 . . . . . . . . . . . . .	Number	 00000000h   
+??0024 . . . . . . . . . . . . .	Number	 00000000h   
+??0027 . . . . . . . . . . . . .	Number	 0001E241h   
+??002E . . . . . . . . . . . . .	Number	 00000000h   
+??002F . . . . . . . . . . . . .	Number	 00000000h   
+??0030 . . . . . . . . . . . . .	Number	 00000000h   
+??0031 . . . . . . . . . . . . .	Number	 00000000h   
+??0032 . . . . . . . . . . . . .	Number	 00000000h   
+??0034 . . . . . . . . . . . . .	Number	 00000000h   
+??0037 . . . . . . . . . . . . .	Number	 00000000h   
+??0038 . . . . . . . . . . . . .	Number	 00000000h   
+??0039 . . . . . . . . . . . . .	Number	 00000004h   
+??003E . . . . . . . . . . . . .	Number	 00000000h   
+??003F . . . . . . . . . . . . .	Number	 00000000h   
+??0040 . . . . . . . . . . . . .	Number	 00000000h   
+??0041 . . . . . . . . . . . . .	Number	 00000000h   
+??0042 . . . . . . . . . . . . .	Number	 00000000h   
+??0043 . . . . . . . . . . . . .	Number	 00000000h   
+??0044 . . . . . . . . . . . . .	Number	 00000000h   
+??0045 . . . . . . . . . . . . .	Number	 00000000h   
+??0046 . . . . . . . . . . . . .	Number	 00000000h   
+??0047 . . . . . . . . . . . . .	Number	 00000000h   
+??0049 . . . . . . . . . . . . .	Number	 00000000h   
+??004A . . . . . . . . . . . . .	Byte	 0000002F _DATA	
+??004B . . . . . . . . . . . . .	Text   	 "
+??004C . . . . . . . . . . . . .	Byte	 0000002E _DATA	
+??004E . . . . . . . . . . . . .	L Near	 000000A4 _TEXT	
+??004F . . . . . . . . . . . . .	Number	 00000000h   
+??0050 . . . . . . . . . . . . .	Byte	 00000045 _DATA	
+??0051 . . . . . . . . . . . . .	Text   	 "
+??0052 . . . . . . . . . . . . .	Byte	 00000044 _DATA	
+??0054 . . . . . . . . . . . . .	L Near	 000000D9 _TEXT	
+??0055 . . . . . . . . . . . . .	Number	 00000000h   
+??0056 . . . . . . . . . . . . .	Byte	 0000005B _DATA	
+??0057 . . . . . . . . . . . . .	Text   	 "
+??0058 . . . . . . . . . . . . .	Byte	 0000005A _DATA	
+??005A . . . . . . . . . . . . .	L Near	 0000010E _TEXT	
+??005B . . . . . . . . . . . . .	Number	 00000000h   
+??005C . . . . . . . . . . . . .	Byte	 00000071 _DATA	
+??005D . . . . . . . . . . . . .	Text   	 "
+??005E . . . . . . . . . . . . .	Byte	 00000070 _DATA	
+??0060 . . . . . . . . . . . . .	L Near	 00000143 _TEXT	
+??0061 . . . . . . . . . . . . .	Number	 00000000h   
+??0062 . . . . . . . . . . . . .	Byte	 00000087 _DATA	
+??0063 . . . . . . . . . . . . .	Text   	 "
+??0064 . . . . . . . . . . . . .	Byte	 00000086 _DATA	
+??0066 . . . . . . . . . . . . .	L Near	 00000178 _TEXT	
+??0067 . . . . . . . . . . . . .	Number	 00000000h   
+??0068 . . . . . . . . . . . . .	Byte	 0000009D _DATA	
+??0069 . . . . . . . . . . . . .	Text   	 "
+??006A . . . . . . . . . . . . .	Byte	 0000009C _DATA	
+??006C . . . . . . . . . . . . .	L Near	 000001AD _TEXT	
+??006D . . . . . . . . . . . . .	Number	 00000000h   
+??006E . . . . . . . . . . . . .	Byte	 000000B3 _DATA	
+??006F . . . . . . . . . . . . .	Text   	 "
+??0070 . . . . . . . . . . . . .	Byte	 000000B2 _DATA	
+??0072 . . . . . . . . . . . . .	L Near	 000001E2 _TEXT	
+??0073 . . . . . . . . . . . . .	Number	 0000007Eh   
+??0076 . . . . . . . . . . . . .	Number	 00000000h   
+??0077 . . . . . . . . . . . . .	Number	 00000000h   
+??0078 . . . . . . . . . . . . .	Number	 00000000h   
+??0079 . . . . . . . . . . . . .	Number	 00000000h   
+??007E . . . . . . . . . . . . .	Number	 00000000h   
+??007F . . . . . . . . . . . . .	Number	 00000000h   
+??0082 . . . . . . . . . . . . .	Number	 00000000h   
+??0083 . . . . . . . . . . . . .	Number	 00000000h   
+??0084 . . . . . . . . . . . . .	Number	 00000000h   
+??0086 . . . . . . . . . . . . .	Number	 00000000h   
+??0088 . . . . . . . . . . . . .	Number	 00000000h   
+??0089 . . . . . . . . . . . . .	Number	 00000008h   
+??008A . . . . . . . . . . . . .	Number	 00000000h   
+??008B . . . . . . . . . . . . .	Number	 00000000h   
+??0090 . . . . . . . . . . . . .	Number	 00000000h   
+??0091 . . . . . . . . . . . . .	Number	 00000000h   
+??0096 . . . . . . . . . . . . .	Number	 00000000h   
+??0097 . . . . . . . . . . . . .	Number	 00000000h   
+??0098 . . . . . . . . . . . . .	Number	 00000000h   
+??0099 . . . . . . . . . . . . .	Number	 00000000h   
+??009A . . . . . . . . . . . . .	Number	 00000000h   
+??009B . . . . . . . . . . . . .	Number	 00000001h   
+??009C . . . . . . . . . . . . .	Number	 00000000h   
+??009D . . . . . . . . . . . . .	Number	 00000001h   
+??009E . . . . . . . . . . . . .	Number	 00000000h   
+??009F . . . . . . . . . . . . .	Number	 00000000h   
+??00A0 . . . . . . . . . . . . .	Number	 00000000h   
+??00A1 . . . . . . . . . . . . .	Number	 00000000h   
+??00A2 . . . . . . . . . . . . .	Number	 00000000h   
+??00A3 . . . . . . . . . . . . .	Number	 00000000h   
+??00A4 . . . . . . . . . . . . .	Number	 00000000h   
+??00A5 . . . . . . . . . . . . .	Number	 00000000h   
+??00A6 . . . . . . . . . . . . .	Number	 00000001h   
+??00A7 . . . . . . . . . . . . .	Number	 00000001h   
+??00A8 . . . . . . . . . . . . .	Number	 0000007Bh   
+??00A9 . . . . . . . . . . . . .	Number	 00000000h   
+??00AA . . . . . . . . . . . . .	Number	 00000000h   
+??00AB . . . . . . . . . . . . .	Number	 00000000h   
+??00AC . . . . . . . . . . . . .	Number	 00000000h   
+??00AD . . . . . . . . . . . . .	Number	 00000000h   
+??00AE . . . . . . . . . . . . .	Number	 00000001h   
+??00AF . . . . . . . . . . . . .	Number	 00000000h   
+??00B0 . . . . . . . . . . . . .	Number	 00000001h   
+??00B1 . . . . . . . . . . . . .	Number	 00000000h   
+??00B2 . . . . . . . . . . . . .	Number	 00000000h   
+??00B3 . . . . . . . . . . . . .	Number	 00000000h   
+??00B4 . . . . . . . . . . . . .	Number	 00000000h   
+??00B7 . . . . . . . . . . . . .	Number	 00000000h   
+??00B8 . . . . . . . . . . . . .	Number	 00000000h   
+??00B9 . . . . . . . . . . . . .	Number	 00000001h   
+??00BA . . . . . . . . . . . . .	Number	 00000001h   
+??00BB . . . . . . . . . . . . .	Number	 00000000h   
+??00BC . . . . . . . . . . . . .	Number	 00000000h   
+??00BD . . . . . . . . . . . . .	Number	 00000000h   
+??00BE . . . . . . . . . . . . .	Number	 00000000h   
+??00BF . . . . . . . . . . . . .	Byte	 000000C9 _DATA	
+??00C0 . . . . . . . . . . . . .	Text   	 "
+??00C1 . . . . . . . . . . . . .	Byte	 000000C8 _DATA	
+??00C3 . . . . . . . . . . . . .	L Near	 00000296 _TEXT	
+??00C4 . . . . . . . . . . . . .	Number	 00000002h   
+??00C5 . . . . . . . . . . . . .	Number	 00000000h   
+??00C7 . . . . . . . . . . . . .	Number	 00000000h   
+??00C8 . . . . . . . . . . . . .	Number	 00000000h   
+??00C9 . . . . . . . . . . . . .	Number	 00000000h   
+??00CF . . . . . . . . . . . . .	Number	 00000000h   
+??00D0 . . . . . . . . . . . . .	Number	 00000000h   
+??00D1 . . . . . . . . . . . . .	Number	 00000000h   
+??00D4 . . . . . . . . . . . . .	Number	 00000000h   
+??00D7 . . . . . . . . . . . . .	Number	 00000000h   
+??00DA . . . . . . . . . . . . .	Number	 0000007Eh   
+??00DD . . . . . . . . . . . . .	Number	 00000000h   
+??00DF . . . . . . . . . . . . .	Number	 00000000h   
+??00E5 . . . . . . . . . . . . .	Number	 00000000h   
+??00E9 . . . . . . . . . . . . .	Number	 00000000h   
+??00ED . . . . . . . . . . . . .	Number	 00000000h   
+??00EF . . . . . . . . . . . . .	Number	 00000000h   
+??00F0 . . . . . . . . . . . . .	Number	 00000000h   
+??00F1 . . . . . . . . . . . . .	Number	 00000000h   
+??00F2 . . . . . . . . . . . . .	Number	 00000001h   
+??00F3 . . . . . . . . . . . . .	Number	 00000000h   
+??00F4 . . . . . . . . . . . . .	Number	 00000001h   
+??00F7 . . . . . . . . . . . . .	Number	 00000000h   
+??00F8 . . . . . . . . . . . . .	Number	 00000001h   
+??00F9 . . . . . . . . . . . . .	Number	 00000000h   
+??00FA . . . . . . . . . . . . .	Number	 00000001h   
+??00FB . . . . . . . . . . . . .	Number	 00000000h   
+??00FC . . . . . . . . . . . . .	Number	 00000001h   
+??00FD . . . . . . . . . . . . .	Number	 00000000h   
+??00FE . . . . . . . . . . . . .	Number	 00000001h   
+??00FF . . . . . . . . . . . . .	Number	 00000001h   
+??0100 . . . . . . . . . . . . .	Number	 00000001h   
+??0102 . . . . . . . . . . . . .	Number	 00000001h   
+??0103 . . . . . . . . . . . . .	Number	 00000001h   
+??0104 . . . . . . . . . . . . .	Number	 00000001h   
+??0105 . . . . . . . . . . . . .	Number	 00000001h   
+??0106 . . . . . . . . . . . . .	Number	 00000000h   
+??0107 . . . . . . . . . . . . .	Number	 00000000h   
+??0108 . . . . . . . . . . . . .	Number	 00000000h   
+??0109 . . . . . . . . . . . . .	Number	 00000000h   
+??010A . . . . . . . . . . . . .	Number	 00000000h   
+??010B . . . . . . . . . . . . .	Number	 00000000h   
+??010C . . . . . . . . . . . . .	Number	 00000000h   
+??010F . . . . . . . . . . . . .	Number	 00000000h   
+??0110 . . . . . . . . . . . . .	Number	 00000000h   
+??0111 . . . . . . . . . . . . .	Number	 00000000h   
+??0112 . . . . . . . . . . . . .	Number	 00000000h   
+??0113 . . . . . . . . . . . . .	Number	 00000000h   
+??0114 . . . . . . . . . . . . .	Number	 00000000h   
+??0115 . . . . . . . . . . . . .	Number	 00000000h   
+??0117 . . . . . . . . . . . . .	Number	 00000000h   
+??0119 . . . . . . . . . . . . .	Number	 00000000h   
+??011A . . . . . . . . . . . . .	Number	 00000000h   
+??011B . . . . . . . . . . . . .	Number	 00000000h   
+??011D . . . . . . . . . . . . .	Number	 00000000h   
+??011E . . . . . . . . . . . . .	Number	 00000000h   
+??011F . . . . . . . . . . . . .	Number	 00000000h   
+??CommonHeapElemSize . . . . . .	DWord	 00000004 _DATA	
+??ConsoleMode  . . . . . . . . .	Byte	 00000008 _DATA	
+??TotalHeapAllocated . . . . . .	DWord	 00000000 _DATA	
+??sTime  . . . . . . . . . . . .	SystemTime  00000009 _DATA	
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DOS . . . . . . . . . . . . . .	Text   	 DOS
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@INCHAR  . . . . . . . . . . . .	Text   	 @inchar
+@ININTLN . . . . . . . . . . . .	Text   	 @inintln
+@ININT . . . . . . . . . . . . .	Text   	 @inint
+@InChar  . . . . . . . . . . . .	Text   	 @inchar
+@InInt . . . . . . . . . . . . .	Text   	 @inint
+@Inchar  . . . . . . . . . . . .	Text   	 @inchar
+@InintLn . . . . . . . . . . . .	Text   	 @inintln
+@Inintln . . . . . . . . . . . .	Text   	 @inintln
+@Inint . . . . . . . . . . . . .	Text   	 @inint
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@READKEY . . . . . . . . . . . .	Text   	 @readkey
+@ReadKey . . . . . . . . . . . .	Text   	 @readkey
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@dos . . . . . . . . . . . . . .	Text   	 DOS
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@random  . . . . . . . . . . . .	Text   	 @Random
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+AllocConsole@0 . . . . . . . . .	L Near	 00000000 FLAT	External STDCALL
+B1 . . . . . . . . . . . . . . .	Byte	 00000019 _DATA	
+B2 . . . . . . . . . . . . . . .	Byte	 0000001A _DATA	
+B3 . . . . . . . . . . . . . . .	Byte	 0000001B _DATA	
+Black  . . . . . . . . . . . . .	Number	 00000000h   
+Blue . . . . . . . . . . . . . .	Number	 00000001h   
+Bright . . . . . . . . . . . . .	Number	 00000008h   
+Brown  . . . . . . . . . . . . .	Number	 00000006h   
+CLRSCR . . . . . . . . . . . . .	Text   	 ClrScr
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CharToOem  . . . . . . . . . . .	Text   	 CharToOemA
+Cls  . . . . . . . . . . . . . .	Text   	 ClrScr
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+Cyan . . . . . . . . . . . . . .	Number	 00000003h   
+D1 . . . . . . . . . . . . . . .	DWord	 00000022 _DATA	
+D2 . . . . . . . . . . . . . . .	DWord	 00000026 _DATA	
+D3 . . . . . . . . . . . . . . .	DWord	 0000002A _DATA	
+DISPOSE  . . . . . . . . . . . .	Text   	 dispose
+DarkGray . . . . . . . . . . . .	Number	 00000008h   
+Dispose  . . . . . . . . . . . .	Text   	 dispose
+EXIT . . . . . . . . . . . . . .	Text   	 exit
+Exit . . . . . . . . . . . . . .	Text   	 exit
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FLUSH  . . . . . . . . . . . . .	Text   	 flush
+Flush  . . . . . . . . . . . . .	Text   	 flush
+FreeConsole@0  . . . . . . . . .	L Near	 00000000 FLAT	External STDCALL
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+GMEM_FIXED . . . . . . . . . . .	Number	 00000000h   
+GMEM_ZEROINIT  . . . . . . . . .	Number	 00000040h   
+GOTOXY . . . . . . . . . . . . .	Text   	 gotoXY
+GetCommandLine . . . . . . . . .	Text   	 GetCommandLineA
+GetModuleHandle  . . . . . . . .	Text   	 GetModuleHandleA
+GotoXY . . . . . . . . . . . . .	Text   	 gotoXY
+Green  . . . . . . . . . . . . .	Number	 00000002h   
+IDABORT  . . . . . . . . . . . .	Number	 00000003h   
+IDCANCEL . . . . . . . . . . . .	Number	 00000002h   
+IDIGNORE . . . . . . . . . . . .	Number	 00000005h   
+IDNO . . . . . . . . . . . . . .	Number	 00000007h   
+IDOK . . . . . . . . . . . . . .	Number	 00000001h   
+IDRETRY  . . . . . . . . . . . .	Number	 00000004h   
+IDYES  . . . . . . . . . . . . .	Number	 00000006h   
+INCHAR . . . . . . . . . . . . .	Text   	 inchar
+ININTLN  . . . . . . . . . . . .	Text   	 inintln
+ININT  . . . . . . . . . . . . .	Text   	 inint
+INPUTSTR . . . . . . . . . . . .	Text   	 InputStr
+InChar . . . . . . . . . . . . .	Text   	 inchar
+InInt  . . . . . . . . . . . . .	Text   	 inint
+Inchar . . . . . . . . . . . . .	Text   	 inchar
+InintLn  . . . . . . . . . . . .	Text   	 inintln
+Inintln  . . . . . . . . . . . .	Text   	 inintln
+Inint  . . . . . . . . . . . . .	Text   	 inint
+K1 . . . . . . . . . . . . . . .	Number	 00000001h   
+K2 . . . . . . . . . . . . . . .	Number	 00000002h   
+K3 . . . . . . . . . . . . . . .	Number	 00000003h   
+LANG_NEUTRAL . . . . . . . . . .	Number	 00000000h   
+LightBlue  . . . . . . . . . . .	Number	 00000009h   
+LightGray  . . . . . . . . . . .	Number	 00000007h   
+LightGreen . . . . . . . . . . .	Number	 0000000Ah   
+LightMagenta . . . . . . . . . .	Number	 0000000Dh   
+LightRed . . . . . . . . . . . .	Number	 0000000Ch   
+MB_ABORTRETRYIGNORE  . . . . . .	Number	 00000002h   
+MB_CANCELTRYCONTINUE . . . . . .	Number	 00000006h   
+MB_DEFBUTTON1  . . . . . . . . .	Number	 00000000h   
+MB_DEFBUTTON2  . . . . . . . . .	Number	 00000100h   
+MB_DEFBUTTON3  . . . . . . . . .	Number	 00000200h   
+MB_DEFBUTTON4  . . . . . . . . .	Number	 00000300h   
+MB_HELP  . . . . . . . . . . . .	Number	 00004000h   
+MB_ICONASTERISK  . . . . . . . .	Number	 00000040h   
+MB_ICONEXCLAMATION . . . . . . .	Number	 00000030h   
+MB_ICONHAND  . . . . . . . . . .	Number	 00000008h   
+MB_ICONQUESTION  . . . . . . . .	Number	 00000020h   
+MB_ICONSTOP  . . . . . . . . . .	Number	 00000010h   
+MB_OKCANCEL  . . . . . . . . . .	Number	 00000001h   
+MB_OK  . . . . . . . . . . . . .	Number	 00000000h   
+MB_RETRYCANCEL . . . . . . . . .	Number	 00000005h   
+MB_RIGHT . . . . . . . . . . . .	Number	 00080000h   
+MB_SYSTEMMODAL . . . . . . . . .	Number	 00001000h   
+MB_USERICON  . . . . . . . . . .	Number	 00000080h   
+MB_YESNOCANCEL . . . . . . . . .	Number	 00000003h   
+MB_YESNO . . . . . . . . . . . .	Number	 00000004h   
+MSGBOX . . . . . . . . . . . . .	Text   	 MsgBox
+Magenta  . . . . . . . . . . . .	Number	 00000005h   
+MessageBoxIndirect . . . . . . .	Text   	 MessageBoxIndirectA
+MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
+NEWLINE  . . . . . . . . . . . .	Text   	 newline
+NEW  . . . . . . . . . . . . . .	Text   	 new
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+NewLine  . . . . . . . . . . . .	Text   	 newline
+Newline  . . . . . . . . . . . .	Text   	 newline
+New  . . . . . . . . . . . . . .	Text   	 new
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+OUTCHARLN  . . . . . . . . . . .	Text   	 outcharln
+OUTCHAR  . . . . . . . . . . . .	Text   	 outchar
+OUTCLN . . . . . . . . . . . . .	Text   	 outcharln
+OUTC . . . . . . . . . . . . . .	Text   	 outchar
+OUTDATELN  . . . . . . . . . . .	Text   	 outdateln
+OUTDATE  . . . . . . . . . . . .	Text   	 outdate
+OUTINTLN . . . . . . . . . . . .	Text   	 outintln
+OUTINT . . . . . . . . . . . . .	Text   	 outint
+OUTI . . . . . . . . . . . . . .	Text   	 outint
+OUTSTRLN . . . . . . . . . . . .	Text   	 outstrln
+OUTSTR . . . . . . . . . . . . .	Text   	 outstr
+OUTTIMELN  . . . . . . . . . . .	Text   	 outtimeln
+OUTTIME  . . . . . . . . . . . .	Text   	 outtime
+OUTWORDLN  . . . . . . . . . . .	Text   	 outwordln
+OUTWORD  . . . . . . . . . . . .	Text   	 outword
+OutCharLn  . . . . . . . . . . .	Text   	 outcharln
+OutCharln  . . . . . . . . . . .	Text   	 outcharln
+OutChar  . . . . . . . . . . . .	Text   	 outchar
+OutDateLn  . . . . . . . . . . .	Text   	 outdateln
+OutDateln  . . . . . . . . . . .	Text   	 outdateln
+OutDate  . . . . . . . . . . . .	Text   	 outdate
+OutILn . . . . . . . . . . . . .	Text   	 outintln
+OutIln . . . . . . . . . . . . .	Text   	 outintln
+OutIntLn . . . . . . . . . . . .	Text   	 outintln
+OutInt . . . . . . . . . . . . .	Text   	 outint
+OutI . . . . . . . . . . . . . .	Text   	 outint
+OutNumLn . . . . . . . . . . . .	Text   	 outnumln
+OutNumln . . . . . . . . . . . .	Text   	 outnumln
+OutNum . . . . . . . . . . . . .	Text   	 outnum
+OutStrLn . . . . . . . . . . . .	Text   	 outstrln
+OutStr . . . . . . . . . . . . .	Text   	 outstr
+OutTimeLn  . . . . . . . . . . .	Text   	 outtimeln
+OutTimeln  . . . . . . . . . . .	Text   	 outtimeln
+OutTime  . . . . . . . . . . . .	Text   	 outtime
+OutULn . . . . . . . . . . . . .	Text   	 outwordln
+OutUln . . . . . . . . . . . . .	Text   	 outwordln
+OutUnsignedLn  . . . . . . . . .	Text   	 outwordln
+OutUnsignedln  . . . . . . . . .	Text   	 outwordln
+OutUnsigned  . . . . . . . . . .	Text   	 outword
+OutU . . . . . . . . . . . . . .	Text   	 outword
+OutWordLn  . . . . . . . . . . .	Text   	 outwordln
+OutWord  . . . . . . . . . . . .	Text   	 outword
+OutintLn . . . . . . . . . . . .	Text   	 outintln
+Outintln . . . . . . . . . . . .	Text   	 outintln
+Outint . . . . . . . . . . . . .	Text   	 outint
+OutstrLn . . . . . . . . . . . .	Text   	 outstrln
+OutwordLn  . . . . . . . . . . .	Text   	 outwordln
+Outword  . . . . . . . . . . . .	Text   	 outword
+PAGE_EXECUTE_READWRITE . . . . .	Number	 00000040h   
+PAGE_EXECUTE_READ  . . . . . . .	Number	 00000020h   
+PAGE_EXECUTE_WRITECOPY . . . . .	Number	 00000080h   
+PAGE_EXECUTE . . . . . . . . . .	Number	 00000010h   
+PAGE_NOACCESS  . . . . . . . . .	Number	 00000001h   
+PAGE_READONLY  . . . . . . . . .	Number	 00000002h   
+PAGE_READWRITE . . . . . . . . .	Number	 00000004h   
+PAGE_WRITECOPY . . . . . . . . .	Number	 00000008h   
+PAUSE  . . . . . . . . . . . . .	Text   	 pause
+Pause  . . . . . . . . . . . . .	Text   	 pause
+READKEY  . . . . . . . . . . . .	Text   	 readkey
+ReadKey  . . . . . . . . . . . .	Text   	 readkey
+Red  . . . . . . . . . . . . . .	Number	 00000004h   
+STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+URLDownloadToFile  . . . . . . .	Text   	 URLDownloadToFileA
+W1 . . . . . . . . . . . . . . .	Word	 0000001C _DATA	
+W2 . . . . . . . . . . . . . . .	Word	 0000001E _DATA	
+W3 . . . . . . . . . . . . . . .	Word	 00000020 _DATA	
+White  . . . . . . . . . . . . .	Number	 0000000Fh   
+Yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+_imp__printf . . . . . . . . . .	DWord	 00000000 FLAT	External STDCALL
+_imp__sprintf  . . . . . . . . .	DWord	 00000000 FLAT	External STDCALL
+black  . . . . . . . . . . . . .	Number	 00000000h   
+blue . . . . . . . . . . . . . .	Number	 00000001h   
+bright . . . . . . . . . . . . .	Number	 00000008h   
+brown  . . . . . . . . . . . . .	Number	 00000006h   
+clrscr . . . . . . . . . . . . .	Text   	 ClrScr
+crt_printf . . . . . . . . . . .	Text   	 _imp__printf
+crt_sprintf  . . . . . . . . . .	Text   	 _imp__sprintf
+cyan . . . . . . . . . . . . . .	Number	 00000003h   
+darkgray . . . . . . . . . . . .	Number	 00000008h   
+dos  . . . . . . . . . . . . . .	Text   	 DOS
+downloadfile . . . . . . . . . .	Text   	 DownloadFile
+gotoxy . . . . . . . . . . . . .	Text   	 gotoXY
+green  . . . . . . . . . . . . .	Number	 00000002h   
+heapblocksize  . . . . . . . . .	Text   	 HeapBlockSize
+inint_proc@0 . . . . . . . . . .	L Near	 00000000 FLAT	External STDCALL
+inputstr . . . . . . . . . . . .	Text   	 InputStr
+lightblue  . . . . . . . . . . .	Number	 00000009h   
+lightgray  . . . . . . . . . . .	Number	 00000007h   
+lightgreen . . . . . . . . . . .	Number	 0000000Ah   
+lightmagenta . . . . . . . . . .	Number	 0000000Dh   
+lightred . . . . . . . . . . . .	Number	 0000000Ch   
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+msgbox . . . . . . . . . . . . .	Text   	 MsgBox
+nil  . . . . . . . . . . . . . .	DWord 	 00000000h   
+outintLn . . . . . . . . . . . .	Text   	 outintln
+outi . . . . . . . . . . . . . .	Text   	 outint
+outwordLn  . . . . . . . . . . .	Text   	 outwordln
+randomize  . . . . . . . . . . .	Text   	 Randomize
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+settextattr  . . . . . . . . . .	Text   	 SetTextAttr
+start  . . . . . . . . . . . . .	L Near	 00000000 _TEXT	Public STDCALL
+whereX . . . . . . . . . . . . .	Text   	 WhereX
+whereY . . . . . . . . . . . . .	Text   	 WhereY
+wherex . . . . . . . . . . . . .	Text   	 WhereX
+wherey . . . . . . . . . . . . .	Text   	 WhereY
+white  . . . . . . . . . . . . .	Number	 0000000Fh   
+yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+
+	   0 Warnings
+	   16 Errors
